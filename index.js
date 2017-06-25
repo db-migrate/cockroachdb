@@ -44,7 +44,7 @@ var CockroachDriver = Base.extend({
           firstFamily = option.family;
       }
 
-      if(option.foreignKey && typeof(option.foreignKey) === 'string') {
+      if(option.foreignKey && typeof(option.foreignKey) === 'object') {
 
         indizies[option.foreignKey.name] = indizies[option.foreignKey.name] || [];
         indizies[option.foreignKey.name].push(key);
