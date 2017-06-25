@@ -24,7 +24,7 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  _applyTableOptions: function(options, tableName) {
+  _applyTableOptions: function(options) {
 
     var sql = '';
 
@@ -34,28 +34,19 @@ var CockroachDriver = Base.extend({
 
       if(option.interleave) {
 
-        if(typeof(option.interleave) === 'object' &&
-          typeof(option.interleave.parent) === 'string') {
-
-          if(typeof(option.interleave.column) !== 'string')
-            option.interleave.column = tableName + '_id';
-
-          sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
-            option.interleave.parent,
-            option.interleave.column
-          );
-        }
-        else if(typeof(option.interleave) === 'string') {
+        if(typeof(option.interleave) === 'string') {
 
           sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
             option.interleave,
-            tableName + '_id'
+            key
           );
-        }
 
+          // only one interleave is possible, return at the first one
+          return sql;
+        }
       }
     });
-    
+
     return sql;
   },
 
