@@ -28,6 +28,7 @@ var CockroachDriver = Base.extend({
 
     var families = {},
         firstFamily,
+        indizies = {},
         sql = [];
 
     Object.keys(options).forEach(function(key) {
@@ -42,15 +43,30 @@ var CockroachDriver = Base.extend({
         if(option.primaryKey === true)
           firstFamily = option.family;
       }
+
+      if(option.foreignKey && typeof(option.foreignKey) === 'string') {
+
+        indizies[option.foreignKey.name] = indizies[option.foreignKey.name] || [];
+        indizies[option.foreignKey.name].push(key);
+      }
+    });
+
+    Object.keys(indizies).forEach(function(key) {
+
+      sql.push(util.format('INDEX %s (%s)',
+        key,
+        indizies[key].join(', ')
+      ));
     });
 
     if(firstFamily) {
 
       sql.push(util.format('FAMILY %s (%s)',
-        key,
+        firstFamily,
         families[firstFamily].join(', ')
       ));
     }
+
 
     Object.keys(families).forEach(function(key) {
 
