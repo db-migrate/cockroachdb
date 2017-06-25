@@ -27,7 +27,10 @@ var CockroachDriver = Base.extend({
   _handleMultiPrimaryKeys: function(primaryKeyColumns) {
 
     return util.format(', PRIMARY KEY (%s)',
-      this.quoteDDLArr(primaryKeyColumns.sort(function(a) {
+      this.quoteDDLArr(primaryKeyColumns.sort(function(a, b) {
+
+        if(a.spec.interleave && b.spec.interleave)
+          return 0;
 
         return a.spec.interleave ? -1 : 1;
       }).map(function(value) {
@@ -39,6 +42,8 @@ var CockroachDriver = Base.extend({
   _applyTableOptions: function(options) {
 
     var sql = '',
+        interleave,
+        interleaves = [],
         self = this;
 
     Object.keys(options).forEach(function(key) {
@@ -49,16 +54,28 @@ var CockroachDriver = Base.extend({
 
         if(typeof(option.interleave) === 'string') {
 
-          sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
-            self.escapeDDL(option.interleave),
-            self.escapeDDL(key)
-          );
+          if(interleave && interleave !== option.interleave) {
 
-          // only one interleave is possible, return at the first one
-          return sql;
+              this.log.warn('Ignoring interleave "' + interleave +
+                '", you can only have one!');
+          }
+          else {
+
+            interleave = option.interleave;
+          }
+
+          interleaves.push(key);
         }
       }
     });
+
+    if(interleaves.length > 0) {
+
+      sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
+        self.escapeDDL(interleave),
+        self.quoteDDLArr(interleaves).join(', ')
+      );
+    }
 
     return sql;
   },
