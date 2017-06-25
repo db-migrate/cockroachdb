@@ -1,8 +1,10 @@
-var Base = require('db-migrate-pg'),
+var Base = require('db-migrate-pg').base,
     pg = require('pg'),
     log,
     type,
     Promise = require('bluebird');
+
+console.log(Base);
 
 var CockroachDriver = Base.extend({
 
