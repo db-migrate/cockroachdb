@@ -15,10 +15,7 @@ var CockroachDriver = Base.extend({
 
 exports.connect = function(config, intern, callback) {
 
-    log = intern.mod.log;
-    type = intern.mod.type;
-
     if (config.native) { pg = pg.native; }
     var db = config.db || new pg.Client(config);
-    callback(null, new PgDriver(db, config.database, intern));
+    callback(null, new CockroachDriver(db, config.database, intern));
 };

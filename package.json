@@ -31,7 +31,7 @@
   "homepage": "https://github.com/db-migrate/cockroachdb#readme",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "db-migrate-pg": "^0.1.12",
+    "db-migrate-pg": "^0.1.13",
     "pg": "^6.4.0"
   }
 }
