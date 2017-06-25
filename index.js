@@ -12,6 +12,18 @@ var CockroachDriver = Base.extend({
     this._super(connection, schema, intern);
   },
 
+  addForeignKey: function(tableName, referencedTableName, keyName, fieldMapping, rules, callback) {
+    if(arguments.length === 5 && typeof(rules) === 'function') {
+      callback = rules;
+      rules = {};
+    }
+    var columns = Object.keys(fieldMapping);
+    var referencedColumns = columns.map(function (key) { return '"' + fieldMapping[key] + '"'; });
+    var sql = util.format('ALTER TABLE "%s" ADD CONSTRAINT "%s" FOREIGN KEY (%s) REFERENCES "%s" (%s)',
+      tableName, keyName, this.quoteDDLArr(columns), referencedTableName, referencedColumns);
+    return this.runSql(sql).nodeify(callback);
+  },
+
   _applyExtensions: function(options) {
 
     var families = {},
