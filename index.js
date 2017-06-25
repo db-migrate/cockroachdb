@@ -24,9 +24,22 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
+  _handleMultiPrimaryKeys: function(primaryKeyColumns) {
+
+    return util.format(', PRIMARY KEY (%s)',
+      this.quoteDDLArr(primaryKeyColumns.sort(function(a) {
+
+        return a.spec.interleave ? -1 : 1;
+      }).map(function(value) {
+
+        return value.name;
+      })).join(', '));
+  },
+
   _applyTableOptions: function(options) {
 
-    var sql = '';
+    var sql = '',
+        self = this;
 
     Object.keys(options).forEach(function(key) {
 
@@ -37,8 +50,8 @@ var CockroachDriver = Base.extend({
         if(typeof(option.interleave) === 'string') {
 
           sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
-            option.interleave,
-            key
+            self.escapeDDL(option.interleave),
+            self.escapeDDL(key)
           );
 
           // only one interleave is possible, return at the first one
@@ -55,7 +68,8 @@ var CockroachDriver = Base.extend({
     var families = {},
         firstFamily,
         indizies = {},
-        sql = [];
+        sql = [],
+        self = this;
 
     Object.keys(options).forEach(function(key) {
 
@@ -64,23 +78,24 @@ var CockroachDriver = Base.extend({
       if(option.family && typeof(option.family) === 'string') {
 
         families[option.family] = families[option.family] || [];
-        families[option.family].push(key);
+        families[option.family].push(self.escapeDDL(key));
 
         if(option.primaryKey === true)
           firstFamily = option.family;
       }
 
-      if(option.foreignKey && typeof(option.foreignKey) === 'object') {
+      if(option.foreignKey && option.primaryKey !== true &&
+         typeof(option.foreignKey) === 'object') {
 
         indizies[option.foreignKey.name] = indizies[option.foreignKey.name] || [];
-        indizies[option.foreignKey.name].push(key);
+        indizies[option.foreignKey.name].push(self.escapeDDL(key));
       }
     });
 
     Object.keys(indizies).forEach(function(key) {
 
       sql.push(util.format('INDEX %s (%s)',
-        key,
+        self.escapeDDL(key),
         indizies[key].join(', ')
       ));
     });
@@ -88,7 +103,7 @@ var CockroachDriver = Base.extend({
     if(firstFamily) {
 
       sql.push(util.format('FAMILY %s (%s)',
-        firstFamily,
+        self.escapeDDL(firstFamily),
         families[firstFamily].join(', ')
       ));
     }
@@ -99,7 +114,7 @@ var CockroachDriver = Base.extend({
       if(key !== firstFamily) {
 
         sql.push(util.format('FAMILY %s (%s)',
-          key,
+          self.escapeDDL(key),
           families[key].join(', ')
         ));
       }
