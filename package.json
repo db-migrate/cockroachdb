@@ -1,0 +1,37 @@
+{
+  "name": "db-migrate-cockroachdb",
+  "version": "1.0.0",
+  "description": "A cockroachdb driver for db-migrate.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/db-migrate/cockroachdb.git"
+  },
+  "keywords": [
+    "db-migrate",
+    "dbmigrate",
+    "migrate",
+    "db",
+    "database",
+    "migration",
+    "driver",
+    "cockroach",
+    "roach",
+    "roachdb",
+    "cockroachdb"
+  ],
+  "author": "Tobias Gurtzick <magic@wizardtales.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/db-migrate/cockroachdb/issues"
+  },
+  "homepage": "https://github.com/db-migrate/cockroachdb#readme",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "db-migrate-pg": "^0.1.11",
+    "pg": "^6.4.0"
+  }
+}
