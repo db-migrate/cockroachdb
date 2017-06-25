@@ -24,6 +24,41 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
+  _applyTableOptions: function(options, tableName) {
+
+    var sql = '';
+
+    Object.keys(options).forEach(function(key) {
+
+      var option = options[key];
+
+      if(option.interleave) {
+
+        if(typeof(option.interleave) === 'object' &&
+          typeof(option.interleave.parent) === 'string') {
+
+          if(typeof(option.interleave.column) !== 'string')
+            option.interleave.column = tableName + '_id';
+
+          sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
+            option.interleave.parent,
+            option.interleave.column
+          );
+        }
+        else if(typeof(option.interleave) === 'string') {
+
+          sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
+            option.interleave,
+            tableName + '_id'
+          );
+        }
+
+      }
+    });
+    
+    return sql;
+  },
+
   _applyExtensions: function(options) {
 
     var families = {},
