@@ -148,7 +148,7 @@ var CockroachDriver = Base.extend({
     function setNotNull() {
       // in cockroacdb you cannot add a null value afterwards
       if(columnSpec.notNull === true) {
-        return setUnique().call(this);
+        return setUnique.call(this);
       }
 
       var setOrDrop =  'DROP';
