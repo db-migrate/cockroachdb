@@ -32,7 +32,7 @@ var CockroachDriver = Base.extend({
         if(a.spec.interleave && b.spec.interleave)
           return 0;
 
-        return a.spec.interleave ? -1 : 1;
+        return a.spec.interleave ? -1 : 1;z
       }).map(function(value) {
 
         return value.name;
@@ -101,8 +101,7 @@ var CockroachDriver = Base.extend({
           firstFamily = option.family;
       }
 
-      if(option.foreignKey && option.primaryKey !== true &&
-         typeof(option.foreignKey) === 'object') {
+      if(option.foreignKey && typeof(option.foreignKey) === 'object') {
 
         indizies[option.foreignKey.name] = indizies[option.foreignKey.name] || [];
         indizies[option.foreignKey.name].push(self.escapeDDL(key));
@@ -141,6 +140,70 @@ var CockroachDriver = Base.extend({
       return '';
 
     return ', ' + sql.join(', ');
+  },
+
+  changeColumn: function(tableName, columnName, columnSpec, callback) {
+    return setNotNull.call(this);
+
+    function setNotNull() {
+      // in cockroacdb you cannot add a null value afterwards
+      if(columnSpec.notNull !== true) {
+        return setUnique();
+      }
+
+      var setOrDrop =  'DROP';
+      var sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL', tableName, columnName, setOrDrop);
+
+      return this.runSql(sql).nodeify(setUnique.bind(this));
+    }
+
+    function setUnique(err) {
+      if (err) {
+        return Promise.reject(err);
+      }
+
+      var sql;
+      var constraintName = tableName + '_' + columnName + '_key';
+
+      if (columnSpec.unique === true) {
+        sql = util.format('ALTER TABLE "%s" ADD CONSTRAINT "%s" UNIQUE ("%s")', tableName, constraintName, columnName);
+        return this.runSql(sql).nodeify(setDefaultValue.bind(this));
+      } else if (columnSpec.unique === false) {
+        sql = util.format('ALTER TABLE "%s" DROP CONSTRAINT "%s"', tableName, constraintName);
+        return this.runSql(sql).nodeify(setDefaultValue.bind(this));
+      } else {
+        return setDefaultValue.call(this);
+      }
+    }
+
+    function setDefaultValue(err) {
+      if (err) {
+        return Promise.reject(err).nodeify(callback);
+      }
+
+      var sql;
+
+      if (columnSpec.defaultValue !== undefined) {
+        var defaultValue = null;
+        if (typeof columnSpec.defaultValue === 'string') {
+          defaultValue = "'" + columnSpec.defaultValue + "'";
+        } else {
+          defaultValue = columnSpec.defaultValue;
+        }
+        sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" SET DEFAULT %s', tableName, columnName, defaultValue);
+      } else {
+        sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" DROP DEFAULT', tableName, columnName);
+      }
+      return this.runSql(sql).then(
+        setType.bind(this)
+      ).nodeify(callback);
+    }
+
+    function setType() {
+
+      // no changes are possible afterwards in cockroachdb currently
+      return Promise.resolve();
+    }
   }
 });
 
