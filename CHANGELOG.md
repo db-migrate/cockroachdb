@@ -1,3 +1,13 @@
+<a name="1.3.9"></a>
+## [1.3.9](https://github.com/db-migrate/cockroachdb/compare/v1.3.8...v1.3.9) (2018-02-12)
+
+
+### Bug Fixes
+
+* **connect:** early connect due to changes on PG ([d065d13](https://github.com/db-migrate/cockroachdb/commit/d065d13))
+
+
+
 <a name="1.3.8"></a>
 ## [1.3.8](https://github.com/db-migrate/cockroachdb/compare/v1.3.7...v1.3.8) (2018-02-12)
 
