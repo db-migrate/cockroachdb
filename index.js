@@ -1,66 +1,76 @@
-var Base = require('db-migrate-pg').base,
-    util = require('util'),
-    pg = require('pg'),
-    log,
-    type,
-    Promise = require('bluebird');
+var Base = require("db-migrate-pg").base,
+  util = require("util"),
+  pg = require("pg"),
+  log,
+  type,
+  Promise = require("bluebird");
 
 var CockroachDriver = Base.extend({
-
   init: function(connection, schema, intern) {
-
     this._super(connection, schema, intern);
   },
 
-  addForeignKey: function(tableName, referencedTableName, keyName, fieldMapping, rules, callback) {
-    if(arguments.length === 5 && typeof(rules) === 'function') {
+  addForeignKey: function(
+    tableName,
+    referencedTableName,
+    keyName,
+    fieldMapping,
+    rules,
+    callback
+  ) {
+    if (arguments.length === 5 && typeof rules === "function") {
       callback = rules;
       rules = {};
     }
     var columns = Object.keys(fieldMapping);
-    var referencedColumns = columns.map(function (key) { return '"' + fieldMapping[key] + '"'; });
-    var sql = util.format('ALTER TABLE "%s" ADD CONSTRAINT "%s" FOREIGN KEY (%s) REFERENCES "%s" (%s)',
-      tableName, keyName, this.quoteDDLArr(columns), referencedTableName, referencedColumns);
+    var referencedColumns = columns.map(function(key) {
+      return '"' + fieldMapping[key] + '"';
+    });
+    var sql = util.format(
+      'ALTER TABLE "%s" ADD CONSTRAINT "%s" FOREIGN KEY (%s) REFERENCES "%s" (%s)',
+      tableName,
+      keyName,
+      this.quoteDDLArr(columns),
+      referencedTableName,
+      referencedColumns
+    );
     return this.runSql(sql).nodeify(callback);
   },
 
   _handleMultiPrimaryKeys: function(primaryKeyColumns) {
+    return util.format(
+      ", PRIMARY KEY (%s)",
+      this.quoteDDLArr(
+        primaryKeyColumns
+          .sort(function(a, b) {
+            if (a.spec.interleave && b.spec.interleave) return 0;
 
-    return util.format(', PRIMARY KEY (%s)',
-      this.quoteDDLArr(primaryKeyColumns.sort(function(a, b) {
-
-        if(a.spec.interleave && b.spec.interleave)
-          return 0;
-
-        return a.spec.interleave ? -1 : 1;z
-      }).map(function(value) {
-
-        return value.name;
-      })).join(', '));
+            return a.spec.interleave ? -1 : 1;
+            z;
+          })
+          .map(function(value) {
+            return value.name;
+          })
+      ).join(", ")
+    );
   },
 
   _applyTableOptions: function(options) {
-
-    var sql = '',
-        interleave,
-        interleaves = [],
-        self = this;
+    var sql = "",
+      interleave,
+      interleaves = [],
+      self = this;
 
     Object.keys(options).forEach(function(key) {
-
       var option = options[key];
 
-      if(option.interleave) {
-
-        if(typeof(option.interleave) === 'string') {
-
-          if(interleave && interleave !== option.interleave) {
-
-              this.log.warn('Ignoring interleave "' + interleave +
-                '", you can only have one!');
-          }
-          else {
-
+      if (option.interleave) {
+        if (typeof option.interleave === "string") {
+          if (interleave && interleave !== option.interleave) {
+            this.log.warn(
+              'Ignoring interleave "' + interleave + '", you can only have one!'
+            );
+          } else {
             interleave = option.interleave;
           }
 
@@ -69,11 +79,11 @@ var CockroachDriver = Base.extend({
       }
     });
 
-    if(interleaves.length > 0) {
-
-      sql = util.format(' INTERLEAVE IN PARENT %s (%s)',
+    if (interleaves.length > 0) {
+      sql = util.format(
+        " INTERLEAVE IN PARENT %s (%s)",
         self.escapeDDL(interleave),
-        self.quoteDDLArr(interleaves).join(', ')
+        self.quoteDDLArr(interleaves).join(", ")
       );
     }
 
@@ -81,65 +91,64 @@ var CockroachDriver = Base.extend({
   },
 
   _applyExtensions: function(options) {
-
     var families = {},
-        firstFamily,
-        indizies = {},
-        sql = [],
-        self = this;
+      firstFamily,
+      indizies = {},
+      sql = [],
+      self = this;
 
     Object.keys(options).forEach(function(key) {
-
       var option = options[key];
 
-      if(option.family && typeof(option.family) === 'string') {
-
+      if (option.family && typeof option.family === "string") {
         families[option.family] = families[option.family] || [];
         families[option.family].push(self.escapeDDL(key));
 
-        if(option.primaryKey === true)
-          firstFamily = option.family;
+        if (option.primaryKey === true) firstFamily = option.family;
       }
 
-      if(option.foreignKey && typeof(option.foreignKey) === 'object') {
-
-        indizies[option.foreignKey.name] = indizies[option.foreignKey.name] || [];
+      if (option.foreignKey && typeof option.foreignKey === "object") {
+        indizies[option.foreignKey.name] =
+          indizies[option.foreignKey.name] || [];
         indizies[option.foreignKey.name].push(self.escapeDDL(key));
       }
     });
 
     Object.keys(indizies).forEach(function(key) {
-
-      sql.push(util.format('INDEX %s (%s)',
-        self.escapeDDL(key),
-        indizies[key].join(', ')
-      ));
+      sql.push(
+        util.format(
+          "INDEX %s (%s)",
+          self.escapeDDL(key),
+          indizies[key].join(", ")
+        )
+      );
     });
 
-    if(firstFamily) {
-
-      sql.push(util.format('FAMILY %s (%s)',
-        self.escapeDDL(firstFamily),
-        families[firstFamily].join(', ')
-      ));
+    if (firstFamily) {
+      sql.push(
+        util.format(
+          "FAMILY %s (%s)",
+          self.escapeDDL(firstFamily),
+          families[firstFamily].join(", ")
+        )
+      );
     }
 
-
     Object.keys(families).forEach(function(key) {
-
-      if(key !== firstFamily) {
-
-        sql.push(util.format('FAMILY %s (%s)',
-          self.escapeDDL(key),
-          families[key].join(', ')
-        ));
+      if (key !== firstFamily) {
+        sql.push(
+          util.format(
+            "FAMILY %s (%s)",
+            self.escapeDDL(key),
+            families[key].join(", ")
+          )
+        );
       }
     });
 
-    if(sql.length === 0)
-      return '';
+    if (sql.length === 0) return "";
 
-    return ', ' + sql.join(', ');
+    return ", " + sql.join(", ");
   },
 
   changeColumn: function(tableName, columnName, columnSpec, callback) {
@@ -147,12 +156,17 @@ var CockroachDriver = Base.extend({
 
     function setNotNull() {
       // in cockroacdb you cannot add a null value afterwards
-      if(columnSpec.notNull === true) {
+      if (columnSpec.notNull === true) {
         return setUnique.call(this);
       }
 
-      var setOrDrop =  'DROP';
-      var sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL', tableName, columnName, setOrDrop);
+      var setOrDrop = "DROP";
+      var sql = util.format(
+        'ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL',
+        tableName,
+        columnName,
+        setOrDrop
+      );
 
       return this.runSql(sql).nodeify(setUnique.bind(this));
     }
@@ -163,13 +177,22 @@ var CockroachDriver = Base.extend({
       }
 
       var sql;
-      var constraintName = tableName + '_' + columnName + '_key';
+      var constraintName = tableName + "_" + columnName + "_key";
 
       if (columnSpec.unique === true) {
-        sql = util.format('ALTER TABLE "%s" ADD CONSTRAINT "%s" UNIQUE ("%s")', tableName, constraintName, columnName);
+        sql = util.format(
+          'ALTER TABLE "%s" ADD CONSTRAINT "%s" UNIQUE ("%s")',
+          tableName,
+          constraintName,
+          columnName
+        );
         return this.runSql(sql).nodeify(setDefaultValue.bind(this));
       } else if (columnSpec.unique === false) {
-        sql = util.format('ALTER TABLE "%s" DROP CONSTRAINT "%s"', tableName, constraintName);
+        sql = util.format(
+          'ALTER TABLE "%s" DROP CONSTRAINT "%s"',
+          tableName,
+          constraintName
+        );
         return this.runSql(sql).nodeify(setDefaultValue.bind(this));
       } else {
         return setDefaultValue.call(this);
@@ -185,32 +208,46 @@ var CockroachDriver = Base.extend({
 
       if (columnSpec.defaultValue !== undefined) {
         var defaultValue = null;
-        if (typeof columnSpec.defaultValue === 'string') {
+        if (typeof columnSpec.defaultValue === "string") {
           defaultValue = "'" + columnSpec.defaultValue + "'";
         } else {
           defaultValue = columnSpec.defaultValue;
         }
-        sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" SET DEFAULT %s', tableName, columnName, defaultValue);
+        sql = util.format(
+          'ALTER TABLE "%s" ALTER COLUMN "%s" SET DEFAULT %s',
+          tableName,
+          columnName,
+          defaultValue
+        );
       } else {
-        sql = util.format('ALTER TABLE "%s" ALTER COLUMN "%s" DROP DEFAULT', tableName, columnName);
+        sql = util.format(
+          'ALTER TABLE "%s" ALTER COLUMN "%s" DROP DEFAULT',
+          tableName,
+          columnName
+        );
       }
-      return this.runSql(sql).then(
-        setType.bind(this)
-      ).nodeify(callback);
+      return this.runSql(sql)
+        .then(setType.bind(this))
+        .nodeify(callback);
     }
 
     function setType() {
-
       // no changes are possible afterwards in cockroachdb currently
       return Promise.resolve();
     }
   }
 });
 
-
 exports.connect = function(config, intern, callback) {
+  if (config.native) {
+    pg = pg.native;
+  }
+  var db = config.db || new pg.Client(config);
 
-    if (config.native) { pg = pg.native; }
-    var db = config.db || new pg.Client(config);
+  db.connect(function(err) {
+    if (err) {
+      callback(err);
+    }
     callback(null, new CockroachDriver(db, config.database, intern));
+  });
 };
