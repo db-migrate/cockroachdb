@@ -1,3 +1,13 @@
+<a name="1.4.0"></a>
+# [1.4.0](https://github.com/db-migrate/cockroachdb/compare/v1.3.9...v1.4.0) (2018-02-14)
+
+
+### Features
+
+* **uuid:** enable autoIncrement alias for uuid ([7024f1e](https://github.com/db-migrate/cockroachdb/commit/7024f1e))
+
+
+
 <a name="1.3.9"></a>
 ## [1.3.9](https://github.com/db-migrate/cockroachdb/compare/v1.3.8...v1.3.9) (2018-02-12)
 
