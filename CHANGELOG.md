@@ -1,3 +1,13 @@
+<a name="1.4.1"></a>
+## [1.4.1](https://github.com/db-migrate/cockroachdb/compare/v1.4.0...v1.4.1) (2018-02-14)
+
+
+### Bug Fixes
+
+* **type:** enforce lowercased data type ([717e476](https://github.com/db-migrate/cockroachdb/commit/717e476))
+
+
+
 <a name="1.4.0"></a>
 # [1.4.0](https://github.com/db-migrate/cockroachdb/compare/v1.3.9...v1.4.0) (2018-02-14)
 
