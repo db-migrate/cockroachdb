@@ -235,6 +235,83 @@ var CockroachDriver = Base.extend({
       // no changes are possible afterwards in cockroachdb currently
       return Promise.resolve();
     }
+  },
+
+  mapDataType: function(str) {
+    switch (str) {
+      case "uuid":
+        return str.toUpperCase();
+    }
+    return this._super(str);
+  },
+
+  createColumnConstraint: function(spec, options, tableName, columnName) {
+    var constraint = [];
+    var callbacks = [];
+    var cb;
+
+    if (spec.primaryKey) {
+      if (spec.autoIncrement) {
+        if (this.mapDataType(spec.type) === "UUID") {
+          constraint.push("UUID");
+          spec.defaultValue = { raw: "gen_random_uuid()" };
+        } else {
+          constraint.push("SERIAL");
+        }
+      }
+
+      if (options.emitPrimaryKey) {
+        constraint.push("PRIMARY KEY");
+      }
+    }
+
+    if (spec.timezone) {
+      constraint.push("WITH TIME ZONE");
+    }
+
+    if (spec.notNull === true) {
+      constraint.push("NOT NULL");
+    }
+
+    if (spec.unique) {
+      constraint.push("UNIQUE");
+    }
+
+    if (spec.defaultValue !== undefined) {
+      constraint.push("DEFAULT");
+      if (typeof spec.defaultValue === "string" && !spec.defaultValue.raw) {
+        constraint.push("'" + spec.defaultValue + "'");
+      } else if (spec.defaultValue.raw) {
+        constraint.push(spec.defaultValue.raw);
+      } else {
+        constraint.push(spec.defaultValue);
+      }
+    }
+
+    // keep foreignKey for backward compatiable, push to callbacks in the future
+    if (spec.foreignKey) {
+      cb = this.bindForeignKey(tableName, columnName, spec.foreignKey);
+    }
+    if (spec.comment) {
+      // TODO: create a new function addComment is not callable from here
+      callbacks.push(
+        function(tableName, columnName, comment, callback) {
+          var sql = util.format(
+            "COMMENT on COLUMN %s.%s IS '%s'",
+            tableName,
+            columnName,
+            comment
+          );
+          return this.runSql(sql).nodeify(callback);
+        }.bind(this, tableName, columnName, spec.comment)
+      );
+    }
+
+    return {
+      foreignKey: cb,
+      callbacks: callbacks,
+      constraints: constraint.join(" ")
+    };
   }
 });
 
