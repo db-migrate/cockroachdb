@@ -238,6 +238,7 @@ var CockroachDriver = Base.extend({
   },
 
   mapDataType: function(str) {
+    str = str.toLowerCase();
     switch (str) {
       case "uuid":
         return str.toUpperCase();
