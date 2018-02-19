@@ -1,3 +1,13 @@
+<a name="1.4.3"></a>
+## [1.4.3](https://github.com/db-migrate/cockroachdb/compare/v1.4.2...v1.4.3) (2018-02-19)
+
+
+### Bug Fixes
+
+* **index:** switch drop into right order ([0fd7d0e](https://github.com/db-migrate/cockroachdb/commit/0fd7d0e))
+
+
+
 <a name="1.4.2"></a>
 ## [1.4.2](https://github.com/db-migrate/cockroachdb/compare/v1.4.1...v1.4.2) (2018-02-19)
 
