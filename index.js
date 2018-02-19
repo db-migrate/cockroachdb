@@ -327,7 +327,7 @@ var CockroachDriver = Base.extend({
     }
 
     if (tableName) {
-      sql = util.format('DROP INDEX "%s"@"%s"', indexName, tableName);
+      sql = util.format('DROP INDEX "%s"@"%s"', tableName, indexName);
     } else {
       sql = util.format('DROP INDEX "%s"', indexName);
     }
