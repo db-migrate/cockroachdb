@@ -313,6 +313,26 @@ var CockroachDriver = Base.extend({
       callbacks: callbacks,
       constraints: constraint.join(" ")
     };
+  },
+
+  removeIndex: function(tableName, indexName, callback) {
+    var sql;
+    if (arguments.length === 2 && typeof indexName === "function") {
+      callback = indexName;
+      indexName = tableName;
+      tableName = null;
+    } else if (arguments.length === 1 && typeof tableName === "string") {
+      indexName = tableName;
+      tableName = null;
+    }
+
+    if (tableName) {
+      sql = util.format('DROP INDEX "%s"@"%s"', indexName, tableName);
+    } else {
+      sql = util.format('DROP INDEX "%s"', indexName);
+    }
+
+    return this.runSql(sql).nodeify(callback);
   }
 });
 
