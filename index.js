@@ -333,6 +333,38 @@ var CockroachDriver = Base.extend({
     }
 
     return this.runSql(sql).nodeify(callback);
+  },
+
+  addIndex: function(tableName, indexName, columns, unique, callback) {
+    if (typeof unique === "function") {
+      callback = unique;
+      unique = false;
+    }
+
+    if (!Array.isArray(columns)) {
+      columns = [columns];
+    }
+    var columnString = columns
+      .map(column => {
+        if (typeof column === "object") {
+          return this.quoteDDLArr(column.name) + (column.DESC === true)
+            ? " DESC"
+            : " ASC";
+        } else {
+          return this.quoteDDLArr(column);
+        }
+      })
+      .join(", ");
+
+    var sql = util.format(
+      'CREATE %s INDEX "%s" ON "%s" (%s)',
+      unique ? "UNIQUE" : "",
+      indexName,
+      tableName,
+      columnString
+    );
+
+    return this.runSql(sql).nodeify(callback);
   }
 });
 
