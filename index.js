@@ -347,11 +347,11 @@ var CockroachDriver = Base.extend({
     var columnString = columns
       .map(column => {
         if (typeof column === "object") {
-          return this.quoteDDLArr(column.name) + (column.DESC === true)
+          return this.escapeDDL(column.name) + (column.DESC === true)
             ? " DESC"
             : " ASC";
         } else {
-          return this.quoteDDLArr(column);
+          return this.escapeDDL(column);
         }
       })
       .join(", ");
