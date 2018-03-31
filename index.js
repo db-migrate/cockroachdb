@@ -347,9 +347,10 @@ var CockroachDriver = Base.extend({
     var columnString = columns
       .map(column => {
         if (typeof column === "object") {
-          return this.escapeDDL(column.name) + (column.DESC === true)
-            ? " DESC"
-            : " ASC";
+          return (
+            this.escapeDDL(column.name) +
+            (column.DESC === true ? " DESC" : " ASC")
+          );
         } else {
           return this.escapeDDL(column);
         }
