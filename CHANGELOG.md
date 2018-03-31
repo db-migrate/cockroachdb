@@ -1,3 +1,13 @@
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/db-migrate/cockroachdb/compare/v1.4.3...v2.0.0) (2018-03-31)
+
+
+### Features
+
+* **index:** add support for sorted indexes ([a2b1204](https://github.com/db-migrate/cockroachdb/commit/a2b1204))
+
+
+
 <a name="1.4.3"></a>
 ## [1.4.3](https://github.com/db-migrate/cockroachdb/compare/v1.4.2...v1.4.3) (2018-02-19)
 
