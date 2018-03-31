@@ -18,16 +18,6 @@
 
 
 
-<a name="2.0.1"></a>
-## [2.0.1](https://github.com/db-migrate/cockroachdb/compare/v2.0.0...v2.0.1) (2018-03-31)
-
-
-### Bug Fixes
-
-* **index:** fix missing quotes ([ad3ccd9](https://github.com/db-migrate/cockroachdb/commit/ad3ccd9))
-
-
-
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/db-migrate/cockroachdb/compare/v1.4.3...v2.0.0) (2018-03-31)
 
