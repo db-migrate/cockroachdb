@@ -366,6 +366,40 @@ var CockroachDriver = Base.extend({
     );
 
     return this.runSql(sql).nodeify(callback);
+  },
+
+  createMigrationsTable: function(callback) {
+    var options = {
+      columns: {
+        id: {
+          type: this.type.INTEGER,
+          notNull: true,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        name: { type: this.type.STRING, length: 255, notNull: true },
+        run_on: { type: this.type.DATE_TIME, notNull: true }
+      },
+      ifNotExists: false
+    };
+
+    return this.all(
+      "SELECT table_name FROM information_schema.tables WHERE table_name = '" +
+        this.internals.migrationTable +
+        "'" +
+        (this.schema ? " AND table_catalog = '" + this.schema + "'" : "") +
+        " AND table_schema = 'public'"
+    )
+      .then(
+        function(result) {
+          if (result && result && result.length < 1) {
+            return this.createTable(this.internals.migrationTable, options);
+          } else {
+            return Promise.resolve();
+          }
+        }.bind(this)
+      )
+      .nodeify(callback);
   }
 });
 
