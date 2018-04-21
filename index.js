@@ -238,10 +238,11 @@ var CockroachDriver = Base.extend({
   },
 
   mapDataType: function(str) {
-    str = str.toLowerCase();
+    str = str.toUpperCase();
     switch (str) {
-      case "uuid":
-        return str.toUpperCase();
+      case "UUID":
+      case "JSONB":
+        return str;
     }
     return this._super(str);
   },
@@ -335,10 +336,15 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  addIndex: function(tableName, indexName, columns, unique, callback) {
-    if (typeof unique === "function") {
-      callback = unique;
-      unique = false;
+  addIndex: function(tableName, indexName, columns, options, callback) {
+    let unique = option === true;
+    let inverted = "";
+
+    if (typeof option === "function") {
+      callback = options;
+    } else if (typeof option === "object") {
+      if (options.unique) unique = options.unique;
+      if (options.inverted) inverted = "INVERTED";
     }
 
     if (!Array.isArray(columns)) {
@@ -358,8 +364,9 @@ var CockroachDriver = Base.extend({
       .join(", ");
 
     var sql = util.format(
-      'CREATE %s INDEX "%s" ON "%s" (%s)',
+      'CREATE %s %s INDEX "%s" ON "%s" (%s)',
       unique ? "UNIQUE" : "",
+      inverted,
       indexName,
       tableName,
       columnString
