@@ -337,12 +337,12 @@ var CockroachDriver = Base.extend({
   },
 
   addIndex: function(tableName, indexName, columns, options, callback) {
-    let unique = option === true;
+    let unique = options === true;
     let inverted = "";
 
-    if (typeof option === "function") {
+    if (typeof options === "function") {
       callback = options;
-    } else if (typeof option === "object") {
+    } else if (typeof options === "object") {
       if (options.unique) unique = options.unique;
       if (options.inverted) inverted = "INVERTED";
     }
