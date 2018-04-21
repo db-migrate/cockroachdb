@@ -1,3 +1,13 @@
+<a name="3.1.0"></a>
+# [3.1.0](https://github.com/db-migrate/cockroachdb/compare/v3.0.0...v3.1.0) (2018-04-21)
+
+
+### Features
+
+* **index:** add support for inverted indexes ([637680a](https://github.com/db-migrate/cockroachdb/commit/637680a))
+
+
+
 <a name="3.0.0"></a>
 # [3.0.0](https://github.com/db-migrate/cockroachdb/compare/v2.0.2...v3.0.0) (2018-04-04)
 
