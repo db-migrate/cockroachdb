@@ -1,3 +1,13 @@
+<a name="3.1.2"></a>
+## [3.1.2](https://github.com/db-migrate/cockroachdb/compare/v3.1.1...v3.1.2) (2018-04-22)
+
+
+### Bug Fixes
+
+* **types:** fix regression due to upper casing ([ea63ee7](https://github.com/db-migrate/cockroachdb/commit/ea63ee7))
+
+
+
 <a name="3.1.1"></a>
 ## [3.1.1](https://github.com/db-migrate/cockroachdb/compare/v3.1.0...v3.1.1) (2018-04-21)
 
