@@ -238,10 +238,10 @@ var CockroachDriver = Base.extend({
   },
 
   mapDataType: function(str) {
-    str = str.toUpperCase();
+    str = str.toLowerCase();
     switch (str) {
-      case "UUID":
-      case "JSONB":
+      case "uuid":
+      case "jsonb":
         return str;
     }
     return this._super(str);
@@ -254,7 +254,7 @@ var CockroachDriver = Base.extend({
 
     if (spec.primaryKey) {
       if (spec.autoIncrement) {
-        if (this.mapDataType(spec.type) === "UUID") {
+        if (this.mapDataType(spec.type) === "uuid") {
           constraint.push("UUID");
           spec.defaultValue = { raw: "gen_random_uuid()" };
         } else {
