@@ -189,7 +189,7 @@ var CockroachDriver = Base.extend({
         return this.runSql(sql).nodeify(setDefaultValue.bind(this));
       } else if (columnSpec.unique === false) {
         sql = util.format(
-          'ALTER TABLE "%s" DROP CONSTRAINT "%s"',
+          'DROP INDEX "%s"@"%s" CASCADE',
           tableName,
           constraintName
         );
