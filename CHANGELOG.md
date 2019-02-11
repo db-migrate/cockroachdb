@@ -1,3 +1,13 @@
+<a name="3.3.1"></a>
+## [3.3.1](https://github.com/db-migrate/cockroachdb/compare/v3.3.0...v3.3.1) (2019-02-11)
+
+
+### Bug Fixes
+
+* **bug:** update pg to make translation of special keys available ([1d88cf5](https://github.com/db-migrate/cockroachdb/commit/1d88cf5))
+
+
+
 <a name="3.3.0"></a>
 # [3.3.0](https://github.com/db-migrate/cockroachdb/compare/v3.2.0...v3.3.0) (2019-02-11)
 
