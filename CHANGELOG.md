@@ -1,3 +1,23 @@
+<a name="3.3.0"></a>
+# [3.3.0](https://github.com/db-migrate/cockroachdb/compare/v3.2.0...v3.3.0) (2019-02-11)
+
+
+### Features
+
+* **defaultValue:** add support for timestamps and add internal handling ([c9533e2](https://github.com/db-migrate/cockroachdb/commit/c9533e2))
+
+
+
+<a name="3.2.0"></a>
+# [3.2.0](https://github.com/db-migrate/cockroachdb/compare/v3.1.2...v3.2.0) (2018-07-25)
+
+
+### Features
+
+* add unique dropping ([c1e50c4](https://github.com/db-migrate/cockroachdb/commit/c1e50c4))
+
+
+
 <a name="3.1.2"></a>
 ## [3.1.2](https://github.com/db-migrate/cockroachdb/compare/v3.1.1...v3.1.2) (2018-04-22)
 
