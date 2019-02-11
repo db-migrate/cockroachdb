@@ -35,7 +35,23 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  _handleMultiPrimaryKeys: function(primaryKeyColumns) {
+  _translateSpecialDefaultValues: function (
+    spec,
+    options,
+    tableName,
+    columnName
+  ) {
+    switch (spec.defaultValue.special) {
+      case 'CURRENT_TIMESTAMP':
+        spec.defaultValue.prep = 'CURRENT_TIMESTAMP()';
+        break;
+      default:
+        this.super(spec, options, tableName, columnName);
+        break;
+    }
+  },
+
+  _handleMultiPrimaryKeys: function (primaryKeyColumns) {
     return util.format(
       ', PRIMARY KEY (%s)',
       this.quoteDDLArr(
@@ -253,7 +269,7 @@ var CockroachDriver = Base.extend({
       if (spec.autoIncrement) {
         if (this.mapDataType(spec.type) === 'uuid') {
           constraint.push('UUID');
-          spec.defaultValue = { raw: 'gen_random_uuid()' };
+          spec.defaultValue = { prep: 'gen_random_uuid()' };
         } else {
           constraint.push('SERIAL');
         }
@@ -278,10 +294,12 @@ var CockroachDriver = Base.extend({
 
     if (spec.defaultValue !== undefined) {
       constraint.push('DEFAULT');
-      if (typeof spec.defaultValue === 'string' && !spec.defaultValue.raw) {
+      if (typeof spec.defaultValue === 'string') {
         constraint.push("'" + spec.defaultValue + "'");
       } else if (spec.defaultValue.raw) {
         constraint.push(spec.defaultValue.raw);
+      } else if (spec.defaultValue.prep) {
+        constraint.push(spec.defaultValue.prep);
       } else {
         constraint.push(spec.defaultValue);
       }
