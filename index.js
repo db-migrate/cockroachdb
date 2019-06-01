@@ -18,7 +18,7 @@ var CockroachDriver = Base.extend({
   ) {
     if (arguments.length === 5 && typeof rules === 'function') {
       callback = rules;
-      rules = {};
+      // rules = {};
     }
     var columns = Object.keys(fieldMapping);
     var referencedColumns = columns.map(function (key) {
@@ -414,7 +414,7 @@ var CockroachDriver = Base.extend({
     )
       .then(
         function (result) {
-          if (result && result && result.length < 1) {
+          if (result && result.length < 1) {
             return this.createTable(this.internals.migrationTable, options);
           } else {
             return Promise.resolve();
