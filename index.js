@@ -4,11 +4,11 @@ let pg = require('pg');
 const Promise = require('bluebird');
 
 var CockroachDriver = Base.extend({
-  init: function (connection, schema, intern) {
+  init: function(connection, schema, intern) {
     this._super(connection, schema, intern);
   },
 
-  addForeignKey: function (
+  addForeignKey: function(
     tableName,
     referencedTableName,
     keyName,
@@ -21,7 +21,7 @@ var CockroachDriver = Base.extend({
       // rules = {};
     }
     var columns = Object.keys(fieldMapping);
-    var referencedColumns = columns.map(function (key) {
+    var referencedColumns = columns.map(function(key) {
       return '"' + fieldMapping[key] + '"';
     });
     var sql = util.format(
@@ -35,7 +35,7 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  _translateSpecialDefaultValues: function (
+  _translateSpecialDefaultValues: function(
     spec,
     options,
     tableName,
@@ -51,31 +51,32 @@ var CockroachDriver = Base.extend({
     }
   },
 
-  _handleMultiPrimaryKeys: function (primaryKeyColumns) {
+  _handleMultiPrimaryKeys: function(primaryKeyColumns) {
     return util.format(
       ', PRIMARY KEY (%s)',
       this.quoteDDLArr(
         primaryKeyColumns
-          .sort(function (a, b) {
+          .sort(function(a, b) {
             if (a.spec.interleave && b.spec.interleave) return 0;
 
             return a.spec.interleave ? -1 : 1;
           })
-          .map(function (value) {
+          .map(function(value) {
             return value.name;
           })
       ).join(', ')
     );
   },
 
-  _applyTableOptions: function (options) {
+  _applyTableOptions: function(options) {
+    const columns = options.columns || options;
     const interleaves = [];
     const self = this;
     let sql = '';
     let interleave;
 
-    Object.keys(options).forEach(function (key) {
-      var option = options[key];
+    Object.keys(columns).forEach(function(key) {
+      var option = columns[key];
 
       if (option.interleave) {
         if (typeof option.interleave === 'string') {
@@ -103,15 +104,16 @@ var CockroachDriver = Base.extend({
     return sql;
   },
 
-  _applyExtensions: function (options) {
+  _applyExtensions: function(options) {
+    const columns = options.columns || options;
     const families = {};
     const indizies = {};
     const sql = [];
     const self = this;
     let firstFamily;
 
-    Object.keys(options).forEach(function (key) {
-      var option = options[key];
+    Object.keys(columns).forEach(function(key) {
+      var option = columns[key];
 
       if (option.family && typeof option.family === 'string') {
         families[option.family] = families[option.family] || [];
@@ -127,7 +129,7 @@ var CockroachDriver = Base.extend({
       }
     });
 
-    Object.keys(indizies).forEach(function (key) {
+    Object.keys(indizies).forEach(function(key) {
       sql.push(
         util.format(
           'INDEX %s (%s)',
@@ -147,7 +149,7 @@ var CockroachDriver = Base.extend({
       );
     }
 
-    Object.keys(families).forEach(function (key) {
+    Object.keys(families).forEach(function(key) {
       if (key !== firstFamily) {
         sql.push(
           util.format(
@@ -164,10 +166,10 @@ var CockroachDriver = Base.extend({
     return ', ' + sql.join(', ');
   },
 
-  changeColumn: function (tableName, columnName, columnSpec, callback) {
+  changeColumn: function(tableName, columnName, columnSpec, callback) {
     return setNotNull.call(this);
 
-    function setNotNull () {
+    function setNotNull() {
       // in cockroacdb you cannot add a null value afterwards
       if (columnSpec.notNull === true) {
         return setUnique.call(this);
@@ -184,7 +186,7 @@ var CockroachDriver = Base.extend({
       return this.runSql(sql).nodeify(setUnique.bind(this));
     }
 
-    function setUnique (err) {
+    function setUnique(err) {
       if (err) {
         return Promise.reject(err);
       }
@@ -212,7 +214,7 @@ var CockroachDriver = Base.extend({
       }
     }
 
-    function setDefaultValue (err) {
+    function setDefaultValue(err) {
       if (err) {
         return Promise.reject(err).nodeify(callback);
       }
@@ -244,13 +246,13 @@ var CockroachDriver = Base.extend({
         .nodeify(callback);
     }
 
-    function setType () {
+    function setType() {
       // no changes are possible afterwards in cockroachdb currently
       return Promise.resolve();
     }
   },
 
-  mapDataType: function (str) {
+  mapDataType: function(str) {
     str = str.toLowerCase();
     switch (str) {
       case 'uuid':
@@ -260,7 +262,7 @@ var CockroachDriver = Base.extend({
     return this._super(str);
   },
 
-  createColumnConstraint: function (spec, options, tableName, columnName) {
+  createColumnConstraint: function(spec, options, tableName, columnName) {
     var constraint = [];
     var callbacks = [];
     var cb;
@@ -312,7 +314,7 @@ var CockroachDriver = Base.extend({
     if (spec.comment) {
       // TODO: create a new function addComment is not callable from here
       callbacks.push(
-        function (tableName, columnName, comment, callback) {
+        function(tableName, columnName, comment, callback) {
           var sql = util.format(
             "COMMENT on COLUMN %s.%s IS '%s'",
             tableName,
@@ -331,7 +333,7 @@ var CockroachDriver = Base.extend({
     };
   },
 
-  removeIndex: function (tableName, indexName, callback) {
+  removeIndex: function(tableName, indexName, callback) {
     var sql;
     if (arguments.length === 2 && typeof indexName === 'function') {
       callback = indexName;
@@ -351,7 +353,7 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  addIndex: function (tableName, indexName, columns, options, callback) {
+  addIndex: function(tableName, indexName, columns, options, callback) {
     let unique = options === true;
     let inverted = '';
 
@@ -390,7 +392,7 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
-  createMigrationsTable: function (callback) {
+  createMigrationsTable: function(callback) {
     var options = {
       columns: {
         id: {
@@ -413,7 +415,7 @@ var CockroachDriver = Base.extend({
         " AND table_schema = 'public'"
     )
       .then(
-        function (result) {
+        function(result) {
           if (result && result.length < 1) {
             return this.createTable(this.internals.migrationTable, options);
           } else {
@@ -425,13 +427,13 @@ var CockroachDriver = Base.extend({
   }
 });
 
-exports.connect = function (config, intern, callback) {
+exports.connect = function(config, intern, callback) {
   if (config.native) {
     pg = pg.native;
   }
   var db = config.db || new pg.Client(config);
 
-  db.connect(function (err) {
+  db.connect(function(err) {
     if (err) {
       callback(err);
     }
