@@ -267,6 +267,13 @@ var CockroachDriver = Base.extend({
     var callbacks = [];
     var cb;
 
+    if (spec.type.toLowerCase() === 'computed') {
+      spec.type = `${spec.computedType} AS (${spec.function})`;
+      if (spec.stored) {
+        spec.type += ' STORED';
+      }
+    }
+
     if (spec.primaryKey) {
       if (spec.autoIncrement) {
         if (this.mapDataType(spec.type) === 'uuid') {
