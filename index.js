@@ -256,7 +256,7 @@ var CockroachDriver = Base.extend({
     str = str.toLowerCase();
     switch (str) {
       case 'float':
-      case 'TIMESTAMPTZ':
+      case 'timestamptz':
       case 'uuid':
       case 'jsonb':
         return str;
