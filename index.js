@@ -255,7 +255,8 @@ var CockroachDriver = Base.extend({
   mapDataType: function (str) {
     str = str.toLowerCase();
     switch (str) {
-      case 'FLOAT':
+      case 'float':
+      case 'TIMESTAMPTZ':
       case 'uuid':
       case 'jsonb':
         return str;
