@@ -255,9 +255,12 @@ var CockroachDriver = Base.extend({
   mapDataType: function (str) {
     str = str.toLowerCase();
     switch (str) {
+      case 'FLOAT':
       case 'uuid':
       case 'jsonb':
         return str;
+      case 'computed':
+        return '';
     }
     return this._super(str);
   },
@@ -266,12 +269,15 @@ var CockroachDriver = Base.extend({
     var constraint = [];
     var callbacks = [];
     var cb;
+    let type = spec.type;
 
-    if (spec.type.toLowerCase() === 'computed') {
-      spec.type = `${spec.computedType} AS (${spec.function})`;
+    // this must keep first as it wilkl replace against mapDataType
+    if (type.toLowerCase() === 'computed') {
+      type = `${this.mapDataType(spec.computedType)} AS (${spec.function})`;
       if (spec.stored) {
-        spec.type += ' STORED';
+        type += ' STORED';
       }
+      constraint.push(type);
     }
 
     if (spec.primaryKey) {
