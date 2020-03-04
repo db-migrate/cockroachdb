@@ -28,9 +28,9 @@ var CockroachDriver = Base.extend({
       'ALTER TABLE "%s" ADD CONSTRAINT "%s" FOREIGN KEY (%s) REFERENCES "%s" (%s)',
       tableName,
       keyName,
-      this.quoteDDLArr(columns),
+      this.quoteDDLArr(columns).join(', '),
       referencedTableName,
-      referencedColumns
+      referencedColumns.join(', ')
     );
     return this.runSql(sql).nodeify(callback);
   },
