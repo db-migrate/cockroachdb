@@ -438,6 +438,10 @@ var CockroachDriver = Base.extend({
         }.bind(this)
       )
       .nodeify(callback);
+  },
+
+  _meta: {
+    supports: { optionParam: true, columnStrategies: true }
   }
 });
 
