@@ -167,15 +167,16 @@ var CockroachDriver = Base.extend({
   },
 
   changeColumn: function (tableName, columnName, columnSpec, callback) {
-    return setNotNull.call(this);
+    let options = {};
+    if (typeof callback === 'object') {
+      options = callback;
+      callback = null;
+    }
+
+    return setNotNull.call(this).nodeify(callback);
 
     function setNotNull () {
-      // in cockroacdb you cannot add a null value afterwards
-      if (columnSpec.notNull === true) {
-        return setUnique.call(this);
-      }
-
-      var setOrDrop = 'DROP';
+      var setOrDrop = columnSpec.notNull === true ? 'SET' : 'DROP';
       var sql = util.format(
         'ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL',
         tableName,
@@ -183,14 +184,10 @@ var CockroachDriver = Base.extend({
         setOrDrop
       );
 
-      return this.runSql(sql).nodeify(setUnique.bind(this));
+      return this.runSql(sql).then(setUnique.bind(this));
     }
 
-    function setUnique (err) {
-      if (err) {
-        return Promise.reject(err);
-      }
-
+    function setUnique () {
       var sql;
       var constraintName = tableName + '_' + columnName + '_key';
 
@@ -201,24 +198,20 @@ var CockroachDriver = Base.extend({
           constraintName,
           columnName
         );
-        return this.runSql(sql).nodeify(setDefaultValue.bind(this));
+        return this.runSql(sql).then(setDefaultValue.bind(this));
       } else if (columnSpec.unique === false) {
         sql = util.format(
           'DROP INDEX "%s"@"%s" CASCADE',
           tableName,
           constraintName
         );
-        return this.runSql(sql).nodeify(setDefaultValue.bind(this));
+        return this.runSql(sql).then(setDefaultValue.bind(this));
       } else {
         return setDefaultValue.call(this);
       }
     }
 
-    function setDefaultValue (err) {
-      if (err) {
-        return Promise.reject(err).nodeify(callback);
-      }
-
+    function setDefaultValue () {
       var sql;
 
       if (columnSpec.defaultValue !== undefined) {
@@ -241,12 +234,10 @@ var CockroachDriver = Base.extend({
           columnName
         );
       }
-      return this.runSql(sql)
-        .then(setType.bind(this))
-        .nodeify(callback);
+      return this.runSql(sql).then(setType.bind(this));
     }
 
-    function setType () {
+    async function setType () {
       // no changes are possible afterwards in cockroachdb currently
       return Promise.resolve();
     }
