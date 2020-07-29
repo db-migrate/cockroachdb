@@ -239,7 +239,22 @@ var CockroachDriver = Base.extend({
 
     async function setType () {
       // no changes are possible afterwards in cockroachdb currently
-      return Promise.resolve();
+      let sql = '';
+      if (columnSpec.type !== undefined) {
+        sql = util.format(
+          'ALTER TABLE "%s" ALTER COLUMN "%s" TYPE %s%s',
+          tableName,
+          columnName,
+          columnSpec.type,
+          columnSpec.length ? `(${columnSpec.length})` : ''
+        );
+      }
+
+      if (sql === '') {
+        return Promise.resolve();
+      } else {
+        return this.runSql(sql);
+      }
     }
   },
 
