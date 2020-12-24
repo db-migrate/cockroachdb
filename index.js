@@ -176,6 +176,9 @@ var CockroachDriver = Base.extend({
     return setNotNull.call(this).nodeify(callback);
 
     function setNotNull () {
+      if (columnSpec.notNull === undefined) {
+        return setUnique.call(this);
+      }
       var setOrDrop = columnSpec.notNull === true ? 'SET' : 'DROP';
       var sql = util.format(
         'ALTER TABLE "%s" ALTER COLUMN "%s" %s NOT NULL',
@@ -412,6 +415,12 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
+  changePrimaryKey: function (table, newPrimary, callback) {
+    return this.runSql(
+      'ALTER TABLE %s DROP CONSTRAINT "primary", ADD PRIMARY KEY (%s)'
+    ).nodeify(callback);
+  },
+
   createMigrationsTable: function (callback) {
     var options = {
       columns: {
@@ -444,6 +453,29 @@ var CockroachDriver = Base.extend({
         }.bind(this)
       )
       .nodeify(callback);
+  },
+
+  learnable: {
+    changePrimaryKey: function (t, n) {
+      if (this.schema[t]) {
+        const _n = Object.values(this.schema[t]).reduce((o, x) => {
+          const c = this.schema[t][x];
+          if (c.primaryKey === true) {
+            delete c.primaryKey;
+            o.push(x);
+          }
+
+          return o;
+        }, []);
+        for (const col of n) {
+          this.schema[t][col].primaryKey = true;
+        }
+
+        this.modC.push({ t: 0, a: 'changePrimaryKey', c: [t, _n] });
+      }
+
+      return Promise.resolve();
+    }
   },
 
   _meta: {
