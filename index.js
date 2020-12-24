@@ -3,6 +3,10 @@ const util = require('util');
 let pg = require('pg');
 const Promise = require('bluebird');
 
+function dummy () {
+  arguments[arguments.length - 1]('not implemented');
+}
+
 var CockroachDriver = Base.extend({
   init: function (connection, schema, intern) {
     this._super(connection, schema, intern);
@@ -417,7 +421,11 @@ var CockroachDriver = Base.extend({
 
   changePrimaryKey: function (table, newPrimary, callback) {
     return this.runSql(
-      'ALTER TABLE %s DROP CONSTRAINT "primary", ADD PRIMARY KEY (%s)'
+      util.format(
+        'ALTER TABLE %s DROP CONSTRAINT "primary", ADD PRIMARY KEY (%s)',
+        this.escapeDDL(table),
+        this.quoteDDLArr(newPrimary).join(', ')
+      )
     ).nodeify(callback);
   },
 
@@ -458,7 +466,7 @@ var CockroachDriver = Base.extend({
   learnable: {
     changePrimaryKey: function (t, n) {
       if (this.schema[t]) {
-        const _n = Object.values(this.schema[t]).reduce((o, x) => {
+        const _n = Object.keys(this.schema[t]).reduce((o, x) => {
           const c = this.schema[t][x];
           if (c.primaryKey === true) {
             delete c.primaryKey;
@@ -468,6 +476,9 @@ var CockroachDriver = Base.extend({
           return o;
         }, []);
         for (const col of n) {
+          if (!this.schema[t][col]) {
+            throw new Error(`There is no ${col} column in schema!`);
+          }
           this.schema[t][col].primaryKey = true;
         }
 
@@ -475,6 +486,12 @@ var CockroachDriver = Base.extend({
       }
 
       return Promise.resolve();
+    }
+  },
+
+  statechanger: {
+    changePrimaryKey: function () {
+      return this._default();
     }
   },
 
@@ -488,6 +505,8 @@ exports.connect = function (config, intern, callback) {
     pg = pg.native;
   }
   var db = config.db || new pg.Client(config);
+
+  intern.interfaces.MigratorInterface.changePrimaryKey = dummy;
 
   db.connect(function (err) {
     if (err) {
