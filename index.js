@@ -22,19 +22,21 @@ var CockroachDriver = Base.extend({
   ) {
     if (arguments.length === 5 && typeof rules === 'function') {
       callback = rules;
-      // rules = {};
+      rules = {};
     }
     var columns = Object.keys(fieldMapping);
     var referencedColumns = columns.map(function (key) {
       return '"' + fieldMapping[key] + '"';
     });
     var sql = util.format(
-      'ALTER TABLE "%s" ADD CONSTRAINT "%s" FOREIGN KEY (%s) REFERENCES "%s" (%s)',
+      'ALTER TABLE "%s" ADD CONSTRAINT "%s" FOREIGN KEY (%s) REFERENCES "%s" (%s) ON DELETE %s ON UPDATE %s',
       tableName,
       keyName,
       this.quoteDDLArr(columns).join(', '),
       referencedTableName,
-      referencedColumns.join(', ')
+      referencedColumns.join(', '),
+      rules.onDelete || 'NO ACTION',
+      rules.onUpdate || 'NO ACTION'
     );
     return this.runSql(sql).nodeify(callback);
   },
