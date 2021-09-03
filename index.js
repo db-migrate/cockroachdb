@@ -475,7 +475,7 @@ var CockroachDriver = Base.extend({
       util.format(
         'CREATE TYPE %s AS ENUM (%s)',
         this.escapeDDL(name),
-        this.quoteDDLArr(definition).join(', ')
+        this.quoteArr(definition).join(', ')
       )
     ).nodeify(callback);
   },
