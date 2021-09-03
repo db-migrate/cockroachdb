@@ -100,6 +100,10 @@ var CockroachDriver = Base.extend({
     });
 
     if (interleaves.length > 0) {
+      this.log.warn(
+        'Interleaving has been deprecated in the latest cockroachdb releases. ' +
+          'Make sure to remove them later if you did not already!'
+      );
       sql = util.format(
         ' INTERLEAVE IN PARENT %s (%s)',
         self.escapeDDL(interleave),
@@ -274,11 +278,46 @@ var CockroachDriver = Base.extend({
       case 'timestamptz':
       case 'uuid':
       case 'jsonb':
+      case 'enum':
         return str;
       case 'computed':
         return '';
     }
     return this._super(str);
+  },
+
+  createColumnDef: function (name, spec, options, tableName) {
+    // add support for datatype timetz, timestamptz
+    // https://www.postgresql.org/docs/9.5/static/datatype.html
+    spec.type = spec.type.replace(/^(time|timestamp)tz$/, function ($, type) {
+      spec.timezone = true;
+      return type;
+    });
+    var type =
+      spec.primaryKey && spec.autoIncrement
+        ? ''
+        : this.mapDataType(spec.type, spec);
+
+    if (type === 'enum') {
+      type = spec.enumName;
+    }
+
+    var len = spec.length ? util.format('(%s)', spec.length) : '';
+    var constraint = this.createColumnConstraint(
+      spec,
+      options,
+      tableName,
+      name
+    );
+    if (name.charAt(0) !== '"') {
+      name = '"' + name + '"';
+    }
+
+    return {
+      foreignKey: constraint.foreignKey,
+      callbacks: constraint.callbacks,
+      constraints: [name, type, len, constraint.constraints].join(' ')
+    };
   },
 
   createColumnConstraint: function (spec, options, tableName, columnName) {
@@ -431,6 +470,22 @@ var CockroachDriver = Base.extend({
     ).nodeify(callback);
   },
 
+  createEnum: function (name, definition, callback) {
+    return this.runSql(
+      util.format(
+        'CREATE TYPE %s AS ENUM (%s)',
+        this.escapeDDL(name),
+        this.quoteDDLArr(definition).join(', ')
+      )
+    ).nodeify(callback);
+  },
+
+  dropEnum: function (name, callback) {
+    return this.runSql(
+      util.format('DROP TYPE %s', this.escapeDDL(name))
+    ).nodeify(callback);
+  },
+
   createMigrationsTable: function (callback) {
     var options = {
       columns: {
@@ -488,11 +543,51 @@ var CockroachDriver = Base.extend({
       }
 
       return Promise.resolve();
+    },
+
+    createEnum: function (n, v) {
+      if (!this.types) {
+        this.types = {};
+      }
+
+      if (this.types[n] && this.types[n].t !== 'ENUM') {
+        throw new Error(
+          `This ENUM "${n}" already exists and collides with the ` +
+            `type "${this.types[n].t}"`
+        );
+      }
+
+      this.types[n] = { t: 'ENUM', v: JSON.parse(JSON.stringify(v)) };
+
+      this.modC.push({ t: 0, a: 'dropEnum', c: [n, v] });
+
+      return Promise.resolve();
+    },
+
+    dropEnum: function (n) {
+      if (!this.types[n]) {
+        throw new Error(`There is no such ENUM "${n}"`);
+      }
+
+      const v = this.types[n].v;
+      delete this.types[n];
+
+      this.modC.push({ t: 0, a: 'createEnum', c: [n, v] });
+
+      return Promise.resolve();
     }
   },
 
   statechanger: {
     changePrimaryKey: function () {
+      return this._default();
+    },
+
+    dropEnum: function () {
+      return this._default();
+    },
+
+    createEnum: function () {
       return this._default();
     }
   },
@@ -509,6 +604,8 @@ exports.connect = function (config, intern, callback) {
   var db = config.db || new pg.Client(config);
 
   intern.interfaces.MigratorInterface.changePrimaryKey = dummy;
+  intern.interfaces.MigratorInterface.dropEnum = dummy;
+  intern.interfaces.MigratorInterface.createEnum = dummy;
 
   db.connect(function (err) {
     if (err) {
