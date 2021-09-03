@@ -299,7 +299,7 @@ var CockroachDriver = Base.extend({
         : this.mapDataType(spec.type, spec);
 
     if (type === 'enum') {
-      type = spec.enumName;
+      type = this.quoteDDL(spec.enumName);
     }
 
     var len = spec.length ? util.format('(%s)', spec.length) : '';
