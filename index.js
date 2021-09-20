@@ -593,7 +593,7 @@ var CockroachDriver = Base.extend({
       //  throw new Error(`There is no such ENUM "${n}"`);
       // }
 
-      this.types[n].v.push(v);
+      // this.types[n].v.push(v);
 
       this.modC.push({ t: 0, a: 'dropEnumType', c: [n, v] });
     },
@@ -607,7 +607,7 @@ var CockroachDriver = Base.extend({
       //  throw new Error(`There is no such ENUM "${n}"`);
       // }
 
-      delete this.types[n].v[this.types[n].v.findIndex(x => x === v)];
+      // delete this.types[n].v[this.types[n].v.findIndex(x => x === v)];
 
       this.modC.push({ t: 0, a: 'addEnumType', c: [n, v] });
     },
@@ -617,8 +617,8 @@ var CockroachDriver = Base.extend({
       //  throw new Error(`There is no such ENUM "${n}"`);
       // }
 
-      const v = this.types[n].v;
-      delete this.types[n];
+      // const v = this.types[n].v;
+      // delete this.types[n];
 
       this.modC.push({ t: 0, a: 'createEnum', c: [n, v] });
 
