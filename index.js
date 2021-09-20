@@ -480,6 +480,26 @@ var CockroachDriver = Base.extend({
     ).nodeify(callback);
   },
 
+  addEnumType: function (name, value, callback) {
+    return this.runSql(
+      util.format(
+        'ALTER TYPE %s ADD VALUE %s',
+        this.escapeDDL(name),
+        this.escapeString(value)
+      )
+    ).nodeify(callback);
+  },
+
+  dropEnumType: function (name, value, callback) {
+    return this.runSql(
+      util.format(
+        'ALTER TYPE %s DROP VALUE %s',
+        this.escapeDDL(name),
+        this.escapeString(value)
+      )
+    ).nodeify(callback);
+  },
+
   dropEnum: function (name, callback) {
     return this.runSql(
       util.format('DROP TYPE %s', this.escapeDDL(name))
@@ -564,6 +584,34 @@ var CockroachDriver = Base.extend({
       return Promise.resolve();
     },
 
+    addEnumType: function (n, v) {
+      if (!this.types) {
+        this.types = {};
+      }
+
+      if (!this.types[n]) {
+        throw new Error(`There is no such ENUM "${n}"`);
+      }
+
+      this.types[n].v.push(v);
+
+      this.modC.push({ t: 0, a: 'dropEnumType', c: [n, v] });
+    },
+
+    dropEnumType: function (n, v) {
+      if (!this.types) {
+        this.types = {};
+      }
+
+      if (!this.types[n]) {
+        throw new Error(`There is no such ENUM "${n}"`);
+      }
+
+      delete this.types[n].v[this.types[n].v.findIndex(x => x === v)];
+
+      this.modC.push({ t: 0, a: 'addEnumType', c: [n, v] });
+    },
+
     dropEnum: function (n) {
       if (!this.types[n]) {
         throw new Error(`There is no such ENUM "${n}"`);
@@ -589,6 +637,14 @@ var CockroachDriver = Base.extend({
 
     createEnum: function () {
       return this._default();
+    },
+
+    addEnumType: function () {
+      return this._default();
+    },
+
+    dropEnumType: function () {
+      return this._default();
     }
   },
 
@@ -606,6 +662,8 @@ exports.connect = function (config, intern, callback) {
   intern.interfaces.MigratorInterface.changePrimaryKey = dummy;
   intern.interfaces.MigratorInterface.dropEnum = dummy;
   intern.interfaces.MigratorInterface.createEnum = dummy;
+  intern.interfaces.MigratorInterface.addEnumType = dummy;
+  intern.interfaces.MigratorInterface.dropEnumType = dummy;
 
   db.connect(function (err) {
     if (err) {
