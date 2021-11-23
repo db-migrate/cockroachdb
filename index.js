@@ -51,6 +51,10 @@ var CockroachDriver = Base.extend({
       case 'CURRENT_TIMESTAMP':
         spec.defaultValue.prep = 'CURRENT_TIMESTAMP()';
         break;
+      case 'NOW':
+        spec.defaultValue.prep = 'NOW()';
+        break;
+
       default:
         this.super(spec, options, tableName, columnName);
         break;
@@ -99,6 +103,9 @@ var CockroachDriver = Base.extend({
       }
     });
 
+    // ToDo: need flag from db-migrate to skip this after we finally
+    // deprecate it
+    // we might even ask during config for the cockroachdb version
     if (interleaves.length > 0) {
       this.log.warn(
         'Interleaving has been deprecated in the latest cockroachdb releases. ' +
@@ -365,13 +372,27 @@ var CockroachDriver = Base.extend({
     if (spec.defaultValue !== undefined) {
       constraint.push('DEFAULT');
       if (typeof spec.defaultValue === 'string') {
-        constraint.push("'" + spec.defaultValue + "'");
+        constraint.push(this.escapeDDL(spec.defaultValue));
       } else if (spec.defaultValue.raw) {
         constraint.push(spec.defaultValue.raw);
       } else if (spec.defaultValue.prep) {
         constraint.push(spec.defaultValue.prep);
       } else {
         constraint.push(spec.defaultValue);
+      }
+    }
+
+    // available from cockroachdb v21.2
+    if (spec.onUpdate !== undefined) {
+      constraint.push('ON UPDATE');
+      if (typeof spec.onUpdate === 'string') {
+        constraint.push(this.escapeDDL(spec.onUpdate));
+      } else if (spec.onUpdate.raw) {
+        constraint.push(spec.onUpdate.raw);
+      } else if (spec.onUpdate.prep) {
+        constraint.push(spec.onUpdate.prep);
+      } else {
+        constraint.push(spec.onUpdate);
       }
     }
 
