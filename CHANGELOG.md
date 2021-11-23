@@ -1,3 +1,12 @@
+# [5.3.0](https://github.com/db-migrate/cockroachdb/compare/v5.2.2...v5.3.0) (2021-11-23)
+
+
+### Features
+
+* add onUpdate ([0799c26](https://github.com/db-migrate/cockroachdb/commit/0799c26e3171fa9298b42035c5b94235ae8f3480))
+
+
+
 <a name="3.3.1"></a>
 ## [3.3.1](https://github.com/db-migrate/cockroachdb/compare/v3.3.0...v3.3.1) (2019-02-11)
 
