@@ -422,7 +422,7 @@ var CockroachDriver = Base.extend({
     if (spec.defaultValue !== undefined) {
       constraint.push('DEFAULT');
       if (typeof spec.defaultValue === 'string') {
-        constraint.push(this.escapeString(spec.defaultValue));
+        constraint.push(`'${spec.defaultValue}'`);
       } else if (spec.defaultValue.prep) {
         constraint.push(spec.defaultValue.prep);
       } else {
@@ -434,7 +434,7 @@ var CockroachDriver = Base.extend({
     if (spec.onUpdate !== undefined) {
       constraint.push('ON UPDATE');
       if (typeof spec.onUpdate === 'string') {
-        constraint.push(this.escapeString(spec.onUpdate));
+        constraint.push(`'${spec.onUpdate}'`);
       } else if (spec.onUpdate.prep) {
         constraint.push(spec.onUpdate.prep);
       } else {
