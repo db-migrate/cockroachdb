@@ -41,18 +41,35 @@ var CockroachDriver = Base.extend({
     return this.runSql(sql).nodeify(callback);
   },
 
+  _prepareSpec: function (columnName, spec, options, tableName) {
+    ['defaultValue', 'onUpdate'].forEach(c => {
+      if (spec[c]) {
+        if (spec[c].raw) {
+          spec[c].prep = spec[c].raw;
+        } else if (spec[c].special) {
+          this._translateSpecialDefaultValues(
+            spec[c],
+            options,
+            tableName,
+            columnName
+          );
+        }
+      }
+    });
+  },
+
   _translateSpecialDefaultValues: function (
     spec,
     options,
     tableName,
     columnName
   ) {
-    switch (spec.defaultValue.special) {
+    switch (spec.special) {
       case 'CURRENT_TIMESTAMP':
-        spec.defaultValue.prep = 'CURRENT_TIMESTAMP()';
+        spec.prep = 'CURRENT_TIMESTAMP()';
         break;
       case 'NOW':
-        spec.defaultValue.prep = 'NOW()';
+        spec.prep = 'NOW()';
         break;
 
       default:
