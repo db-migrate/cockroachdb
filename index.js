@@ -260,7 +260,7 @@ var CockroachDriver = Base.extend({
         if (columnSpec.defaultValue.prep) {
           defaultValue = columnSpec.defaultValue.prep;
         } else {
-          defaultValue = columnSpec.defaultValue;
+          defaultValue = this.escapeString(columnSpec.defaultValue);
         }
         sql = util.format(
           'ALTER TABLE "%s" ALTER COLUMN "%s" SET DEFAULT %s',
@@ -289,7 +289,7 @@ var CockroachDriver = Base.extend({
         if (columnSpec.onUpdate.prep) {
           onUpdate = columnSpec.onUpdate.prep;
         } else {
-          onUpdate = columnSpec.onUpdate;
+          onUpdate = this.escapeString(columnSpec.onUpdate);
         }
         sql = util.format(
           'ALTER TABLE "%s" ALTER COLUMN "%s" SET ON UPDATE %s',
@@ -422,7 +422,7 @@ var CockroachDriver = Base.extend({
     if (spec.defaultValue !== undefined) {
       constraint.push('DEFAULT');
       if (typeof spec.defaultValue === 'string') {
-        constraint.push(`'${spec.defaultValue}'`);
+        constraint.push(this.escapeString(spec.defaultValue));
       } else if (spec.defaultValue.prep) {
         constraint.push(spec.defaultValue.prep);
       } else {
@@ -434,7 +434,7 @@ var CockroachDriver = Base.extend({
     if (spec.onUpdate !== undefined) {
       constraint.push('ON UPDATE');
       if (typeof spec.onUpdate === 'string') {
-        constraint.push(`'${spec.onUpdate}'`);
+        constraint.push(this.escapeString(spec.onUpdate));
       } else if (spec.onUpdate.prep) {
         constraint.push(spec.onUpdate.prep);
       } else {
