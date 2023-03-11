@@ -101,6 +101,19 @@ var CockroachDriver = Base.extend({
     const self = this;
     let sql = '';
     let interleave;
+    const parts = [];
+
+    if (options.expire && options.columns && typeof (options.expire) === 'string') {
+      parts.push(util.format('ttl_expiration_expression = %s', self.quote(options.expire)));
+    }
+
+    if (options.expireAfter && options.columns && typeof (options.expireAfter) === 'string') {
+      parts.push(util.format('ttl_expire_after = %s', self.quote(options.expireAfter)));
+    }
+
+    if (options.ttlJobCron && options.columns && typeof (options.ttlJobCron) === 'string') {
+      parts.push(util.format('ttl_job_cron  = %s', self.quote(options.ttlJobCron)));
+    }
 
     Object.keys(columns).forEach(function (key) {
       var option = columns[key];
@@ -128,11 +141,15 @@ var CockroachDriver = Base.extend({
         'Interleaving has been deprecated in the latest cockroachdb releases. ' +
           'Make sure to remove them later if you did not already!'
       );
-      sql = util.format(
+      sql += util.format(
         ' INTERLEAVE IN PARENT %s (%s)',
         self.escapeDDL(interleave),
         self.quoteDDLArr(interleaves).join(', ')
       );
+    }
+
+    if (parts.length) {
+      sql += ` WITH (${parts.join(', ')})`;
     }
 
     return sql;
