@@ -104,15 +104,15 @@ var CockroachDriver = Base.extend({
     const parts = [];
 
     if (options.expire && options.columns && typeof (options.expire) === 'string') {
-      parts.push(util.format('ttl_expiration_expression = %s', self.escape(options.expire)));
+      parts.push(util.format('ttl_expiration_expression = %s', self.escapeString(options.expire)));
     }
 
     if (options.expireAfter && options.columns && typeof (options.expireAfter) === 'string') {
-      parts.push(util.format('ttl_expire_after = %s', self.escape(options.expireAfter)));
+      parts.push(util.format('ttl_expire_after = %s', self.escapeString(options.expireAfter)));
     }
 
     if (options.ttlJobCron && options.columns && typeof (options.ttlJobCron) === 'string') {
-      parts.push(util.format('ttl_job_cron  = %s', self.escape(options.ttlJobCron)));
+      parts.push(util.format('ttl_job_cron  = %s', self.escapeString(options.ttlJobCron)));
     }
 
     Object.keys(columns).forEach(function (key) {
