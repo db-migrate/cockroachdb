@@ -108,7 +108,7 @@ var CockroachDriver = Base.extend({
     }
 
     if (options.expireAfter && options.columns && typeof (options.expireAfter) === 'string') {
-      parts.push(util.format('ttl_expire_after = %s', self.escapeString(options.expireAfter)));
+      parts.push(util.format('ttl_expire_after = \'%s\'', self.escapeDDL(options.expireAfter)));
     }
 
     if (options.ttlJobCron && options.columns && typeof (options.ttlJobCron) === 'string') {
