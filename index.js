@@ -1,5 +1,6 @@
 const Base = require('db-migrate-pg').base;
 const util = require('util');
+const fs = require('fs');
 let pg = require('pg');
 const Promise = require('bluebird');
 
@@ -740,6 +741,10 @@ var CockroachDriver = Base.extend({
 exports.connect = function (config, intern, callback) {
   if (config.native) {
     pg = pg.native;
+  } else if (config.ssl?.sslmode) {
+    if(config.ssl.sslrootcert) config.ssl.ca = fs.readFileSync(config.ssl.sslrootcert).toString();
+    if(config.ssl.sslcert) config.ssl.cert = fs.readFileSync(config.ssl.sslcert).toString();
+    if(config.ssl.sslkey) config.ssl.key = fs.readFileSync(config.ssl.sslkey).toString();
   }
   var db = config.db || new pg.Client(config);
 
