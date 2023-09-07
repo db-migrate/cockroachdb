@@ -565,6 +565,16 @@ var CockroachDriver = Base.extend({
     ).nodeify(callback);
   },
 
+  renameEnum: function (name, newName, callback) {
+    return this.runSql(
+      util.format(
+        'ALTER TYPE %s RENAME TO %s',
+        this.escapeDDL(name),
+        this.escapeDDL(newName)
+      )
+    ).nodeify(callback);
+  },
+
   addEnumType: function (name, value, callback) {
     return this.runSql(
       util.format(
@@ -669,6 +679,41 @@ var CockroachDriver = Base.extend({
       return Promise.resolve();
     },
 
+    renameEnum: function (n, v) {
+      if (!this.types) {
+        this.types = {};
+      }
+
+      // if (!this.types[n]) {
+      //   throw new Error(
+      //     `This ENUM "${n}" does not exist.`
+      //   );
+      // }
+
+      // if (this.types[v]) {
+      //   throw new Error(
+      //     `This ENUM "${n}" already exists and collides with the ` +
+      //       `type "${this.types[n].t}"`
+      //   );
+      // }
+
+      // this.types[v] = this.types[n];
+      // delete this.types[n];
+
+      for (const key in this.schema) {
+        for (const k in this.schema[key]) {
+          if (this.schema[key][k].type === 'enum' &&
+              this.schema[key][k].enumName === n) {
+            this.schema[key][k].enumName = v;
+          }
+        }
+      }
+
+      this.modC.push({ t: 0, a: 'renameEnum', c: [v, n] });
+
+      return Promise.resolve();
+    },
+
     addEnumType: function (n, v) {
       if (!this.types) {
         this.types = {};
@@ -705,7 +750,7 @@ var CockroachDriver = Base.extend({
       // const v = this.types[n].v;
       // delete this.types[n];
 
-      this.modC.push({ t: 0, a: 'createEnum', c: [n, v] });
+      this.modC.push({ t: 0, a: 'createEnum', c: [n] });
 
       return Promise.resolve();
     }
@@ -717,6 +762,10 @@ var CockroachDriver = Base.extend({
     },
 
     dropEnum: function () {
+      return this._default();
+    },
+
+    renameEnum: function () {
       return this._default();
     },
 
@@ -742,9 +791,9 @@ exports.connect = function (config, intern, callback) {
   if (config.native) {
     pg = pg.native;
   } else if (config.ssl?.sslmode) {
-    if(config.ssl.sslrootcert) config.ssl.ca = fs.readFileSync(config.ssl.sslrootcert).toString();
-    if(config.ssl.sslcert) config.ssl.cert = fs.readFileSync(config.ssl.sslcert).toString();
-    if(config.ssl.sslkey) config.ssl.key = fs.readFileSync(config.ssl.sslkey).toString();
+    if (config.ssl.sslrootcert) config.ssl.ca = fs.readFileSync(config.ssl.sslrootcert).toString();
+    if (config.ssl.sslcert) config.ssl.cert = fs.readFileSync(config.ssl.sslcert).toString();
+    if (config.ssl.sslkey) config.ssl.key = fs.readFileSync(config.ssl.sslkey).toString();
   }
   var db = config.db || new pg.Client(config);
 
@@ -753,6 +802,7 @@ exports.connect = function (config, intern, callback) {
   intern.interfaces.MigratorInterface.createEnum = dummy;
   intern.interfaces.MigratorInterface.addEnumType = dummy;
   intern.interfaces.MigratorInterface.dropEnumType = dummy;
+  // intern.interfaces.MigratorInterface.renameEnum = dummy;
 
   db.connect(function (err) {
     if (err) {
