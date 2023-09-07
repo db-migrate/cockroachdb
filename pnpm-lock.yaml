@@ -9,8 +9,8 @@ dependencies:
     specifier: ^3.5.0
     version: 3.7.2
   db-migrate-pg:
-    specifier: ^1.4.0
-    version: 1.4.0
+    specifier: ^1.4.1
+    version: 1.4.1
   pg:
     specifier: ^8.0.2
     version: 8.5.1
@@ -256,8 +256,8 @@ packages:
       bluebird: 3.7.2
     dev: false
 
-  /db-migrate-pg@1.4.0:
-    resolution: {integrity: sha512-U5HqnphElDrTzUQ37lPXHc6UdJ0ZZ/CruSPxyc12nFq7oOXEDy1+q3hZ3P3JoC71uz/dOPaCroAW6CzDm2I9ZA==}
+  /db-migrate-pg@1.4.1:
+    resolution: {integrity: sha512-3ppeRpB2xEiunn81/lgwCrHbb/yczEYMSVybnnuflUfZYsA/1Pa2+kLBSQPt31ar/A1W2/IE3rmUvcMfv3MW+g==}
     dependencies:
       bluebird: 3.7.2
       db-migrate-base: 2.3.0
