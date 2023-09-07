@@ -661,18 +661,19 @@ var CockroachDriver = Base.extend({
     },
 
     createEnum: function (n, v) {
-      if (!this.types) {
-        this.types = {};
+      let extra = this.extra.t;
+      if (!extra) {
+        extra = this.extra.t = {};
       }
 
-      if (this.types[n] && this.types[n].t !== 'ENUM') {
+      if (extra[n] && extra[n].t !== 'ENUM') {
         throw new Error(
           `This ENUM "${n}" already exists and collides with the ` +
-            `type "${this.types[n].t}"`
+            `type "${extra[n].t}"`
         );
       }
 
-      this.types[n] = { t: 'ENUM', v: JSON.parse(JSON.stringify(v)) };
+      extra[n] = { t: 'ENUM', v: JSON.parse(JSON.stringify(v)) };
 
       this.modC.push({ t: 0, a: 'dropEnum', c: [n, v] });
 
@@ -680,25 +681,26 @@ var CockroachDriver = Base.extend({
     },
 
     renameEnum: function (n, v) {
-      if (!this.types) {
-        this.types = {};
+      let extra = this.extra.t;
+      if (!extra) {
+        extra = this.extra.t = {};
       }
 
-      // if (!this.types[n]) {
+      // if (!extra[n]) {
       //   throw new Error(
       //     `This ENUM "${n}" does not exist.`
       //   );
       // }
 
-      // if (this.types[v]) {
+      // if (extra[v]) {
       //   throw new Error(
       //     `This ENUM "${n}" already exists and collides with the ` +
-      //       `type "${this.types[n].t}"`
+      //       `type "${extra[n].t}"`
       //   );
       // }
 
-      // this.types[v] = this.types[n];
-      // delete this.types[n];
+      // extra[v] = extra[n];
+      // delete extra[n];
 
       for (const key in this.schema) {
         for (const k in this.schema[key]) {
@@ -715,29 +717,31 @@ var CockroachDriver = Base.extend({
     },
 
     addEnumType: function (n, v) {
-      if (!this.types) {
-        this.types = {};
+      let extra = this.extra.t;
+      if (!extra) {
+        extra = this.extra.t = {};
       }
 
-      // if (!this.types[n]) {
+      // if (!extra[n]) {
       //  throw new Error(`There is no such ENUM "${n}"`);
       // }
 
-      // this.types[n].v.push(v);
+      // extra[n].v.push(v);
 
       this.modC.push({ t: 0, a: 'dropEnumType', c: [n, v] });
     },
 
     dropEnumType: function (n, v) {
-      if (!this.types) {
-        this.types = {};
+      let extra = this.extra.t;
+      if (!extra) {
+        extra = this.extra.t = {};
       }
 
-      // if (!this.types[n]) {
+      // if (!extra[n]) {
       //  throw new Error(`There is no such ENUM "${n}"`);
       // }
 
-      // delete this.types[n].v[this.types[n].v.findIndex(x => x === v)];
+      // delete extra[n].v[extra[n].v.findIndex(x => x === v)];
 
       this.modC.push({ t: 0, a: 'addEnumType', c: [n, v] });
     },
@@ -802,7 +806,7 @@ exports.connect = function (config, intern, callback) {
   intern.interfaces.MigratorInterface.createEnum = dummy;
   intern.interfaces.MigratorInterface.addEnumType = dummy;
   intern.interfaces.MigratorInterface.dropEnumType = dummy;
-  // intern.interfaces.MigratorInterface.renameEnum = dummy;
+  intern.interfaces.MigratorInterface.renameEnum = dummy;
 
   db.connect(function (err) {
     if (err) {
