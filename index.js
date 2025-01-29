@@ -793,7 +793,7 @@ var CockroachDriver = Base.extend({
 
 exports.connect = function (config, intern, callback) {
   if (config.native) {
-    pg = {Client: pg.native};
+    pg = pg.native;
   } else if (config.ssl?.sslmode) {
     if (config.ssl.sslrootcert) config.ssl.ca = fs.readFileSync(config.ssl.sslrootcert).toString();
     if (config.ssl.sslcert) config.ssl.cert = fs.readFileSync(config.ssl.sslcert).toString();
