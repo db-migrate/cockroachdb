@@ -525,7 +525,8 @@ var CockroachDriver = Base.extend({
         if (typeof column === 'object') {
           return (
             this.escapeDDL(column.name) +
-            (column.DESC === true ? ' DESC' : ' ASC')
+            (column.DESC === true ? ' DESC' : column.DESC === false ? ' ASC' : '')
+            + column.opclass ? ` ${column.opclass}` : ''
           );
         } else {
           return this.escapeDDL(column);
