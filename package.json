@@ -1,6 +1,6 @@
 {
   "name": "db-migrate-cockroachdb",
-  "version": "5.8.0",
+  "version": "5.8.1",
   "description": "A cockroachdb driver for db-migrate.",
   "main": "index.js",
   "scripts": {
