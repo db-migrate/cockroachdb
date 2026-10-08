@@ -1,3 +1,21 @@
+# [5.8.0](https://github.com/db-migrate/cockroachdb/compare/v5.7.6...v5.8.0) (2026-10-08)
+
+
+### Features
+
+* declare support for the migration lock ([0e01382](https://github.com/db-migrate/cockroachdb/commit/0e013822a5be7141adc989080bd2fa9de8ab8dcf))
+
+
+### Upgrade notes
+
+* Requires db-migrate-pg 1.6.0 and with it db-migrate-base 2.4.0, migration and seed
+  records are now written with `run_on` set by the database clock instead of the
+  clock of the migrating process. If that process ran in a different time zone than
+  the database session, records written shortly after the upgrade can sort before
+  the last records written before it. This window is as long as the time zone offset.
+
+
+
 # [5.3.0](https://github.com/db-migrate/cockroachdb/compare/v5.2.2...v5.3.0) (2021-11-23)
 
 
