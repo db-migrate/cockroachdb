@@ -788,7 +788,7 @@ var CockroachDriver = Base.extend({
   },
 
   _meta: {
-    supports: { optionParam: true, columnStrategies: true }
+    supports: { optionParam: true, columnStrategies: true, locking: true }
   }
 });
 
