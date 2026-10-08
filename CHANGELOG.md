@@ -1,3 +1,17 @@
+## [5.8.1](https://github.com/db-migrate/cockroachdb/compare/v5.8.0...v5.8.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* **enum:** revert dropEnum with its values ([67f32f3](https://github.com/db-migrate/cockroachdb/commit/67f32f3a06da6a6bcbcb17a764d5b955698ceed6))
+
+  The reverse operation of dropEnum recreated the ENUM without values, failing
+  with '"undefined" is not valid JSON' on rollback and down, and the ENUM stayed in
+  the learned schema. Dropping an ENUM unknown to the schema now warns that it can
+  not be reverted.
+
+
+
 # [5.8.0](https://github.com/db-migrate/cockroachdb/compare/v5.7.6...v5.8.0) (2026-10-08)
 
 
