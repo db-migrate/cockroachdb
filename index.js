@@ -667,6 +667,13 @@ var CockroachDriver = Base.extend({
         extra = this.extra.t = {};
       }
 
+      if (!Array.isArray(v)) {
+        throw new Error(
+          `Can not create the ENUM "${n}", its values are unknown. This ` +
+            'happens reverting a dropEnum of an ENUM unknown to the schema.'
+        );
+      }
+
       if (extra[n] && extra[n].t !== 'ENUM') {
         throw new Error(
           `This ENUM "${n}" already exists and collides with the ` +
@@ -748,14 +755,21 @@ var CockroachDriver = Base.extend({
     },
 
     dropEnum: function (n) {
-      // if (!this.types[n]) {
-      //  throw new Error(`There is no such ENUM "${n}"`);
-      // }
+      const extra = this.extra.t || {};
+      let v;
 
-      // const v = this.types[n].v;
-      // delete this.types[n];
+      if (extra[n]) {
+        v = extra[n].v;
+        delete extra[n];
+      } else if (this.driver.log) {
+        this.driver.log.warn(
+          `The ENUM "${n}" is unknown to the schema, dropping it can not ` +
+            'be reverted.'
+        );
+      }
 
-      this.modC.push({ t: 0, a: 'createEnum', c: [n] });
+      // the values are needed to recreate it reverting
+      this.modC.push({ t: 0, a: 'createEnum', c: [n, v] });
 
       return Promise.resolve();
     }
