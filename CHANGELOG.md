@@ -1,3 +1,17 @@
+# [5.9.0](https://github.com/db-migrate/cockroachdb/compare/v5.8.2...v5.9.0) (2026-10-09)
+
+
+### Bug Fixes
+
+* escape column comments ([24a2f9c](https://github.com/db-migrate/cockroachdb/commit/24a2f9cfcdacfdfec8494e05c9222ef1abf71732))
+
+
+### Features
+
+* insert objects and several rows, with db-migrate-pg 1.7.0 ([7104c4b](https://github.com/db-migrate/cockroachdb/commit/7104c4b2e666f83f09e4ed053ed975a9f2246bfc))
+
+
+
 ## [5.8.2](https://github.com/db-migrate/cockroachdb/compare/v5.8.1...v5.8.2) (2026-10-09)
 
 
