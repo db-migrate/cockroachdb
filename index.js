@@ -825,7 +825,7 @@ exports.connect = function (config, intern, callback) {
 
   db.connect(function (err) {
     if (err) {
-      callback(err);
+      return callback(err);
     }
     callback(null, new CockroachDriver(db, config.database, intern));
   });
