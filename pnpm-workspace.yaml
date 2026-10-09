@@ -3,3 +3,5 @@ minimumReleaseAgeExclude:
   - db-migrate-pg@1.6.0
   - db-migrate-base@2.4.1
   - db-migrate-pg@1.6.1
+  - db-migrate-base@2.5.0
+  - db-migrate-pg@1.7.0
