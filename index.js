@@ -74,7 +74,7 @@ var CockroachDriver = Base.extend({
         break;
 
       default:
-        this.super(spec, options, tableName, columnName);
+        this._super(spec, options, tableName, columnName);
         break;
     }
   },
