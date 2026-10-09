@@ -469,10 +469,10 @@ var CockroachDriver = Base.extend({
       callbacks.push(
         function (tableName, columnName, comment, callback) {
           var sql = util.format(
-            "COMMENT on COLUMN %s.%s IS '%s'",
+            'COMMENT on COLUMN %s.%s IS %s',
             tableName,
             columnName,
-            comment
+            this.escapeString(comment)
           );
           return this.runSql(sql).nodeify(callback);
         }.bind(this, tableName, columnName, spec.comment)
