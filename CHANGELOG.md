@@ -1,3 +1,13 @@
+## [5.8.2](https://github.com/db-migrate/cockroachdb/compare/v5.8.1...v5.8.2) (2026-10-09)
+
+
+### Bug Fixes
+
+* call back once on a connection error ([9206e5e](https://github.com/db-migrate/cockroachdb/commit/9206e5ee2c6062f93b4b973d54faef99964aba7a))
+* unsupported special default values failed calling this.super ([568c496](https://github.com/db-migrate/cockroachdb/commit/568c49601ff3734fa8910528f1e25fdffac15fb9))
+
+
+
 ## [5.8.1](https://github.com/db-migrate/cockroachdb/compare/v5.8.0...v5.8.1) (2026-10-08)
 
 
